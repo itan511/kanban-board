@@ -8,9 +8,9 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title Example API
+// @title Kanban board
 // @version 1.0
-// @description This is a sample API
+// @description Kanban board with Golang, Postgres and JVT
 // @host localhost:8080
 // @BasePath /api
 

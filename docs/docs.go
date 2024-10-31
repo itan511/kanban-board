@@ -24,7 +24,7 @@ const docTemplate = `{
                 "summary": "Hello World",
                 "responses": {
                     "200": {
-                        "description": "Hello world!",
+                        "description": "Hello world",
                         "schema": {
                             "type": "string"
                         }
@@ -41,8 +41,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api",
 	Schemes:          []string{},
-	Title:            "Example API",
-	Description:      "This is a sample API",
+	Title:            "Kanban board",
+	Description:      "Kanban board with Golang, Postgres and JVT",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

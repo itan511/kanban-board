@@ -2,8 +2,8 @@ basePath: /api
 host: localhost:8080
 info:
   contact: {}
-  description: This is a sample API
-  title: Example API
+  description: Kanban board with Golang, Postgres and JVT
+  title: Kanban board
   version: "1.0"
 paths:
   /:
@@ -13,7 +13,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Hello world!
+          description: Hello world
           schema:
             type: string
       summary: Hello World

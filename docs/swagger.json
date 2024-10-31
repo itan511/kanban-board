@@ -1,8 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a sample API",
-        "title": "Example API",
+        "description": "Kanban board with Golang, Postgres and JVT",
+        "title": "Kanban board",
         "contact": {},
         "version": "1.0"
     },
@@ -18,7 +18,7 @@
                 "summary": "Hello World",
                 "responses": {
                     "200": {
-                        "description": "Hello world!",
+                        "description": "Hello world",
                         "schema": {
                             "type": "string"
                         }
