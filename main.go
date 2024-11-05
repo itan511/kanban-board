@@ -1,34 +1,20 @@
 package main
 
 import (
-	_ "kanban-board/docs"
-
-	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
+    "log"
+    "net/http"
+    "kanban-board/router"
+    //"kanban-board/db"
 )
 
-// @title Kanban board
-// @version 1.0
-// @description Kanban board with Golang, Postgres and JVT
-// @host localhost:8080
-// @BasePath /api
-
-// @Summary Hello World
-// @Description Returns a greeting message
-// @Produce json
-// @Success 200 {string} string "Hello world"
-// @Router / [get]
 func main() {
-	// Создаём новый роутер
-	r := gin.Default()
+    // Подключаемся к базе данных
+    //db.InitDB()
 
-	// Определяем маршрут для корневого сообщения
-	r.GET("/api", func(c *gin.Context) {
-		c.JSON(200, "Hello world")
-	})
+    // Инициализируем маршруты
+    r := router.InitRouter()
 
-	// Запускаем сервер на порту 8080
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	r.Run(":8080") // устанавливаем :8080 как порт
+    // Запускаем сервер
+    log.Println("Server started at :3000")
+    http.ListenAndServe(":3000", r)
 }
