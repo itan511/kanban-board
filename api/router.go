@@ -11,15 +11,18 @@ func InitRouter(app *App) *chi.Mux {
 	r.Use(middleware.Logger)
 
 	// Маршруты для аутентификации
-	r.Post("/login", app.Login)
+	r.Post("/login", app.LoginHandler)
 	r.Post("/register", app.RegisterHandler)
 
 	// Маршруты для проектов
 	r.Route("/projects", func(r chi.Router) {
 		//r.Use(api.TokenVerifyMiddleware) // Защита маршрутов авторизацией
-		
+		r.Get("/", app.GetProjects)
+		r.Get("/{id}", app.GetProjectByID)
+		r.Delete("/{id}", app.DeleteProjectHandler)
+
 		// r.Post("/login", app.Login)
-		r.Get("/list", CreateProject)
+		r.Post("/create", app.CreateProjectHandler)
 		// Добавьте остальные CRUD-обработчики для проекта
 	})
 
