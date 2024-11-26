@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS projects (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
+    description TEXT,
     user_id INT REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -21,16 +22,18 @@ CREATE TABLE IF NOT EXISTS boards (
 CREATE TABLE IF NOT EXISTS columns (
     id SERIAL PRIMARY KEY,
     board_id INT REFERENCES boards(id) ON DELETE CASCADE,
-    name VARCHAR(100) NOT NULL
+    status VARCHAR(100) NOT NULL,
 );
 
 CREATE TABLE IF NOT EXISTS tasks (
     id SERIAL PRIMARY KEY,
-    column_id INT REFERENCES columns(id) ON DELETE CASCADE,
+    column_id INT REFERENCES columns(id) ON DELETE CASCADE,   
     title VARCHAR(100) NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE columns ADD CONSTRAINT unique_status_per_board UNIQUE (board_id, status);
 
 CREATE TABLE IF NOT EXISTS task_logs (
     id SERIAL PRIMARY KEY,

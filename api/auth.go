@@ -15,7 +15,7 @@ import (
 )
 
 func (app *App) RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	var creds types.Credentials
+	var creds types.UserCreds
 
 	err := json.NewDecoder(r.Body).Decode(&creds)
 	if err != nil {
@@ -65,32 +65,8 @@ func (app *App) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func (app *App) GenerateToken(email string) (string, error) {
-	JWTKey := []byte(os.Getenv("JWT_SECRET"))
-	if len(JWTKey) == 0 {
-		log.Fatalf("JWT_SECRET environment variable is not set")
-	}
-
-	expirationTime := time.Now().Add(1 * time.Hour)
-
-	claims := &types.Claims{
-		Email: email,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	tokenString, err := token.SignedString(JWTKey)
-	if err != nil {
-		return "", err
-	}
-	return tokenString, nil
-}
-
-func (app *App) Login(w http.ResponseWriter, r *http.Request) {
-	var creds types.Credentials
+func (app *App) LoginHandler(w http.ResponseWriter, r *http.Request) {
+	var creds types.UserCreds
 
 	err := json.NewDecoder(r.Body).Decode(&creds)
 	if err != nil {
@@ -98,7 +74,7 @@ func (app *App) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var storedCreds types.Credentials
+	var storedCreds types.UserCreds
 
 	err = app.DB.QueryRow("SELECT email, password FROM users WHERE email=$1",
 		creds.Email).Scan(&storedCreds.Email, &storedCreds.Password)
@@ -131,4 +107,28 @@ func (app *App) Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func (app *App) GenerateToken(email string) (string, error) {
+	JWTKey := []byte(os.Getenv("JWT_SECRET"))
+	if len(JWTKey) == 0 {
+		log.Fatalf("JWT_SECRET environment variable is not set")
+	}
+
+	expirationTime := time.Now().Add(1 * time.Hour)
+
+	claims := &types.Claims{
+		Email: email,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString(JWTKey)
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type Credentials struct {
+type UserCreds struct {
 	Username string `json:"username,omitempty"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -18,7 +18,7 @@ type Claims struct {
 }
 
 type UserResponse struct {
-	Username string `json:"username,omitempty"`
+	Username string `json:"username"`
 	Email    string `json:"email"`
 	Token    string `json:"token"`
 }
@@ -28,11 +28,12 @@ type ProjectResponse struct {
 }
 
 type Project struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	UserID    int       `json:"user_id"`
-	CreatedAt time.Time `json:"created_at"`
-	Boards    []Board   `json:"boards,omitempty"`
+	ID          int       `json:"id"`
+	UserID      int       `json:"user_id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	Boards      []Board   `json:"boards,omitempty"`
 }
 
 type Board struct {
