@@ -1,1 +1,1 @@
-# Kanban board with Golang
+# Kanban board with Golang and Postgres
