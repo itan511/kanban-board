@@ -107,21 +107,18 @@ func (app *App) GetProjects(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) DeleteProjectHandler(w http.ResponseWriter, r *http.Request) {
-	// Получаем ID проекта из параметров URL
 	projectID := chi.URLParam(r, "id")
 	if projectID == "" {
 		http.Error(w, "Project ID is required", http.StatusBadRequest)
 		return
 	}
 
-	// Выполняем запрос на удаление проекта
 	result, err := app.DB.Exec("DELETE FROM projects WHERE id = $1", projectID)
 	if err != nil {
 		http.Error(w, "Database error while deleting project", http.StatusInternalServerError)
 		return
 	}
 
-	// Проверяем, был ли удален проект
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		http.Error(w, "Error checking rows affected", http.StatusInternalServerError)
@@ -133,7 +130,6 @@ func (app *App) DeleteProjectHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Отправляем успешный ответ
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Project deleted successfully"))
 }
