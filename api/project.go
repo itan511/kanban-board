@@ -52,6 +52,13 @@ func (app *App) CreateProjectHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, err = app.DB.Exec("INSERT INTO project_users (project_id, user_id, role) VALUES ($1, $2, 'user')",
+		project.ID, project.UserID)
+	if err != nil {
+		http.Error(w, "Error adding user to project", http.StatusInternalServerError)
+		return
+	}
+
 	response := types.Project{
 		ID:          project.ID,
 		Name:        project.Name,
@@ -132,4 +139,52 @@ func (app *App) DeleteProjectHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Project deleted successfully"))
+}
+
+func (app *App) UpdateProjectHandler(w http.ResponseWriter, r *http.Request) {
+	projectID := chi.URLParam(r, "id")
+	if projectID == "" {
+		http.Error(w, "Project ID is required", http.StatusBadRequest)
+		return
+	}
+
+	var updateData types.Project
+	err := json.NewDecoder(r.Body).Decode(&updateData)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	var existingProject types.Project
+	err = app.DB.QueryRow("SELECT id, name, description, user_id, created_at FROM projects WHERE id = $1",
+		projectID).Scan(&existingProject.ID, &existingProject.Name, &existingProject.Description, &existingProject.UserID, &existingProject.CreatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Project not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Database error while fetching project", http.StatusInternalServerError)
+		return
+	}
+
+	if updateData.Name != "" {
+		_, err = app.DB.Exec("UPDATE projects SET name = $1 WHERE id = $2", updateData.Name, projectID)
+		if err != nil {
+			http.Error(w, "Error updating project name", http.StatusInternalServerError)
+			return
+		}
+		existingProject.Name = updateData.Name
+	}
+
+	if updateData.Description != "" {
+		_, err = app.DB.Exec("UPDATE projects SET description = $1 WHERE id = $2", updateData.Description, projectID)
+		if err != nil {
+			http.Error(w, "Error updating project description", http.StatusInternalServerError)
+			return
+		}
+		existingProject.Description = updateData.Description
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(existingProject)
 }
