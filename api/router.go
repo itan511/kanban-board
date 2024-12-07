@@ -34,5 +34,13 @@ func InitRouter(app *App) *chi.Mux {
 		r.Delete("/remove/{id}", app.RemoveUserFromProjectHandler)
 	})
 
+	r.Route("/columns", func(r chi.Router) {
+		r.Get("/", app.GetColumns)
+		r.Get("/{id}", app.GetColumnByID)
+		r.Post("/create", app.CreateColumnHandler)
+		r.Put("/{id}", app.UpdateColumnHandler)
+		r.Delete("/{id}", app.DeleteColumnHandler)
+	})
+
 	return r
 }

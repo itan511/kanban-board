@@ -46,7 +46,7 @@ type Board struct {
 type Column struct {
 	ID      int    `json:"id"`
 	BoardID int    `json:"board_id"`
-	Status    string `json:"name"`
+	Status  string `json:"status"`
 	Tasks   []Task `json:"tasks,omitempty"`
 }
 
