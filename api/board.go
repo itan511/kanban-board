@@ -55,9 +55,9 @@ func (app *App) CreateBoardHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Board created with ID: %d", board.ID)
 
-	_, err = app.DB.Exec(`INSERT INTO columns (board_id, status) VALUES 
-	($1, 'todo'), 
-	($1, 'doing'), 
+	_, err = app.DB.Exec(`INSERT INTO columns (board_id, status) VALUES
+	($1, 'todo'),
+	($1, 'doing'),
 	($1, 'done')`,
 		board.ID)
 	if err != nil {
@@ -168,8 +168,8 @@ func (app *App) UpdateBoardNameHandler(w http.ResponseWriter, r *http.Request) {
 
 	var updateData types.Board
 	err := json.NewDecoder(r.Body).Decode(&updateData)
-	if err != nil || updateData.Name == "" {
-		http.Error(w, "Invalid request payload or missing name", http.StatusBadRequest)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 

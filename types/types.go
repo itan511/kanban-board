@@ -62,7 +62,6 @@ type Task struct {
 type TaskLog struct {
 	ID         int       `json:"id"`
 	TaskID     int       `json:"task_id"`
-	UserID     *int      `json:"user_id"`
 	ActionType string    `json:"action_type"`
 	LogMessage string    `json:"log_message"`
 	CreatedAt  time.Time `json:"created_at"`

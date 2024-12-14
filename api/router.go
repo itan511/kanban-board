@@ -20,6 +20,12 @@ func InitRouter(app *App) *chi.Mux {
 		r.Delete("/{id}", app.DeleteProjectHandler)
 	})
 
+	r.Route("/project_users", func(r chi.Router) {
+		r.Get("/{id}", app.GetProjectUsersHandler)
+		r.Post("/add/{id}", app.AddUserToProjectHandler)
+		r.Delete("/remove/{id}", app.RemoveUserFromProjectHandler)
+	})
+
 	r.Route("/boards", func(r chi.Router) {
 		r.Get("/", app.GetBoards)
 		r.Get("/{id}", app.GetBoardByID)
@@ -28,18 +34,20 @@ func InitRouter(app *App) *chi.Mux {
 		r.Delete("/{id}", app.DeleteBoardHandler)
 	})
 
-	r.Route("/project_users", func(r chi.Router) {
-		r.Get("/{id}", app.GetProjectUsersHandler)
-		r.Post("/add/{id}", app.AddUserToProjectHandler)
-		r.Delete("/remove/{id}", app.RemoveUserFromProjectHandler)
-	})
-
 	r.Route("/columns", func(r chi.Router) {
 		r.Get("/", app.GetColumns)
 		r.Get("/{id}", app.GetColumnByID)
 		r.Post("/create", app.CreateColumnHandler)
 		r.Put("/{id}", app.UpdateColumnHandler)
 		r.Delete("/{id}", app.DeleteColumnHandler)
+	})
+
+	r.Route("/tasks", func(r chi.Router) {
+		r.Get("/", app.GetTasks)
+		r.Get("/{id}", app.GetTaskByID)
+		r.Post("/create", app.CreateTaskHandler)
+		r.Put("/{id}", app.UpdateTaskHandler)
+		r.Delete("/{id}", app.DeleteTaskHandler)
 	})
 
 	return r

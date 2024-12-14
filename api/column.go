@@ -150,7 +150,7 @@ func (app *App) UpdateColumnHandler(w http.ResponseWriter, r *http.Request) {
 		columnID).Scan(&existingColumn.ID, &existingColumn.BoardID, &existingColumn.Status)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			http.Error(w, "Project not found", http.StatusNotFound)
+			http.Error(w, "Column not found", http.StatusNotFound)
 			return
 		}
 		http.Error(w, "Database error while fetching column", http.StatusInternalServerError)

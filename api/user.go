@@ -16,7 +16,7 @@ func (app *App) AddUserToProjectHandler(w http.ResponseWriter, r *http.Request) 
 
 	var userData struct {
 		UserID int    `json:"user_id"`
-		Role   string `json:"role"` // Роль пользователя в проекте
+		Role   string `json:"role"`
 	}
 
 	err := json.NewDecoder(r.Body).Decode(&userData)
@@ -25,7 +25,6 @@ func (app *App) AddUserToProjectHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Проверка существования проекта
 	var projectExists bool
 	err = app.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM projects WHERE id = $1)", projectID).Scan(&projectExists)
 	if err != nil {
@@ -37,7 +36,6 @@ func (app *App) AddUserToProjectHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Проверка существования пользователя
 	var userExists bool
 	err = app.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)", userData.UserID).Scan(&userExists)
 	if err != nil {
@@ -49,7 +47,6 @@ func (app *App) AddUserToProjectHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Проверка, есть ли уже пользователь в проекте
 	var userAlreadyInProject bool
 	err = app.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM project_users WHERE project_id = $1 AND user_id = $2)",
 		projectID, userData.UserID).Scan(&userAlreadyInProject)
@@ -62,7 +59,6 @@ func (app *App) AddUserToProjectHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Добавление пользователя в проект
 	_, err = app.DB.Exec("INSERT INTO project_users (project_id, user_id, role) VALUES ($1, $2, $3)",
 		projectID, userData.UserID, userData.Role)
 	if err != nil {
@@ -91,7 +87,6 @@ func (app *App) RemoveUserFromProjectHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// Проверяем, находится ли пользователь в проекте
 	var userExistsInProject bool
 	err = app.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM project_users WHERE project_id = $1 AND user_id = $2)",
 		projectID, userData.UserID).Scan(&userExistsInProject)
@@ -104,7 +99,6 @@ func (app *App) RemoveUserFromProjectHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// Удаляем пользователя из проекта
 	_, err = app.DB.Exec("DELETE FROM project_users WHERE project_id = $1 AND user_id = $2", projectID, userData.UserID)
 	if err != nil {
 		http.Error(w, "Error removing user from project", http.StatusInternalServerError)
