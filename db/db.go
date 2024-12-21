@@ -2,8 +2,10 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -13,30 +15,29 @@ import (
 )
 
 func InitDB() (*sql.DB, error) {
-	err := godotenv.Load()
+	err, dbHost := loadEnv()
 	if err != nil {
-		log.Fatal("Error loading .env file")
 		return nil, err
 	}
 
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
-	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbName := os.Getenv("DB_NAME")
 	dbSslMode := os.Getenv("DB_SSLMODE")
 
-	connStr := "postgres://" + dbUser + ":" + dbPassword + "@" + dbHost + ":" + dbPort + "/" + dbName + "?sslmode=" + dbSslMode
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", dbUser, dbPassword, dbHost, dbPort, dbName, dbSslMode)
 
-	db, err := sql.Open("postgres", connStr)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	if err := db.Ping(); err != nil {
+	
+	if err := waitForDB(db); err != nil {
 		db.Close()
 		return nil, err
 	}
+
 	log.Println("Connected to the database successfully!")
 
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
@@ -45,16 +46,64 @@ func InitDB() (*sql.DB, error) {
 		return nil, err
 	}
 
+	migrationPath := getMigrationPath()
+
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://./migrations",
+		migrationPath,
 		"postgres", driver,
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	m.Up()
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatalf("Migration failed: %v", err)
+	}
 
 	log.Println("Migrations applied successfully!")
 	return db, nil
+}
+
+func loadEnv() (error, string) {
+	var dbHost string
+
+	if _, err := os.Stat("/app/.env"); os.IsNotExist(err) {
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatalf("Error loading .env file from root: %v", err)
+			return err, ""
+		}
+		dbHost = os.Getenv("DB_DEV_HOST")
+	} else {
+		err := godotenv.Load("/app/.env")
+		if err != nil {
+			log.Fatalf("Error loading .env file from /app: %v", err)
+			return err, ""
+		}
+		dbHost = os.Getenv("DB_HOST")
+	}
+
+	if dbHost == "" {
+		return fmt.Errorf("DB_HOST not set in .env file"), ""
+	}
+
+	return nil, dbHost
+}
+
+func getMigrationPath() string {
+	if _, err := os.Stat("/app"); os.IsNotExist(err) {
+		return "file://./migrations"
+	} else {
+		return "file:///app/migrations"
+	}
+}
+
+func waitForDB(db *sql.DB) error {
+	for {
+		if err := db.Ping(); err == nil {
+			return nil
+		}
+		log.Println("Waiting for database...")
+		time.Sleep(2 * time.Second)
+	}
 }
