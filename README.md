@@ -21,6 +21,7 @@ git clone https://github.com/itan511/kanban-board.git
 To run the application, you need to create a .env file in the project root folder 
 and add environment variables there as in example.env.
 After that, go to the terminal in the project directory and enter the following commands.
+
 To run application enter:
 ```Makefile
 make all
