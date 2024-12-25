@@ -45,6 +45,8 @@ func InitRouter(app *App) *chi.Mux {
 	r.Route("/tasks", func(r chi.Router) {
 		r.Get("/", app.GetTasks)
 		r.Get("/{id}", app.GetTaskByID)
+		r.Get("/column/{id}", app.GetTasksByColumn)
+		r.Get("/{id}/logs", app.GetTaskLogs)
 		r.Post("/create", app.CreateTaskHandler)
 		r.Put("/{id}", app.UpdateTaskHandler)
 		r.Delete("/{id}", app.DeleteTaskHandler)

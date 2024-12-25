@@ -23,10 +23,6 @@ type UserResponse struct {
 	Token    string `json:"token"`
 }
 
-type ProjectResponse struct {
-	Message string `json:"message"`
-}
-
 type Project struct {
 	ID          int       `json:"id"`
 	UserID      int       `json:"user_id"`

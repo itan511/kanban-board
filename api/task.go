@@ -121,6 +121,56 @@ func (app *App) GetTasks(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(tasks)
 }
 
+func (app *App) GetTasksByColumn(w http.ResponseWriter, r *http.Request) {
+	columnID := chi.URLParam(r, "id")
+	if columnID == "" {
+		http.Error(w, "Column ID is required", http.StatusBadRequest)
+		return
+	}
+	
+	rows, err := app.DB.Query("SELECT id, column_id, title, description, created_at FROM tasks WHERE column_id = $1", columnID)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var tasks []types.Task
+	for rows.Next() {
+		var task types.Task
+		if err := rows.Scan(&task.ID, &task.ColumnID, &task.Title, &task.Description, &task.CreatedAt); err != nil {
+			http.Error(w, "Error scanning tasks", http.StatusInternalServerError)
+			return
+		}
+		tasks = append(tasks, task)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(tasks)
+}
+
+func (app *App) GetTaskLogs(w http.ResponseWriter, r *http.Request) {
+	taskID := chi.URLParam(r, "id")
+	if taskID == "" {
+		http.Error(w, "Task ID is required", http.StatusBadRequest)
+		return
+	}
+	var logs types.TaskLog
+
+	err := app.DB.QueryRow("SELECT id, task_id, action_type, log_message, created_at FROM task_logs WHERE task_id = $1", taskID).
+		Scan(&logs.ID, &logs.TaskID, &logs.ActionType, &logs.LogMessage, &logs.CreatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Task logs not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(logs)
+}
+
 func (app *App) DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 	taskID := chi.URLParam(r, "id")
 	if taskID == "" {
