@@ -19,7 +19,7 @@ func (app *App) CreateColumnHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if column.BoardID == 0 {
-		http.Error(w, "UserID is required", http.StatusBadRequest)
+		http.Error(w, "BoardID is required", http.StatusBadRequest)
 		return
 	}
 
