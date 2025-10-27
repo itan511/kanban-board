@@ -43,7 +43,6 @@ func toPublic(u *types.User) types.PublicUser {
 		ID:        u.ID,
 		Username:  u.Username,
 		Email:     u.Email,
-		CreatedAt: u.CreatedAt,
 	}
 }
 

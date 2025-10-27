@@ -28,8 +28,8 @@ func NewUserRepo(db *sql.DB) UserRepo {
 }
 
 func (r *postgresUserRepo) CreateUser(ctx context.Context, u *types.User) error {
-	q := `INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, created_at`
-	if err := r.db.QueryRowContext(ctx, q, u.Username, u.Email, u.Password).Scan(&u.ID, &u.CreatedAt); err != nil {
+	q := `INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id`
+	if err := r.db.QueryRowContext(ctx, q, u.Username, u.Email, u.Password).Scan(&u.ID); err != nil {
 		return err
 	}
 	return nil
@@ -37,8 +37,8 @@ func (r *postgresUserRepo) CreateUser(ctx context.Context, u *types.User) error 
 
 func (r *postgresUserRepo) GetByEmail(ctx context.Context, email string) (*types.User, error) {
 	var u types.User
-	q := `SELECT id, username, email, password, created_at FROM users WHERE email = $1`
-	if err := r.db.QueryRowContext(ctx, q, email).Scan(&u.ID, &u.Username, &u.Email, &u.Password, &u.CreatedAt); err != nil {
+	q := `SELECT id, username, email, password FROM users WHERE email = $1`
+	if err := r.db.QueryRowContext(ctx, q, email).Scan(&u.ID, &u.Username, &u.Email, &u.Password); err != nil {
 		return nil, err
 	}
 	return &u, nil
@@ -46,8 +46,8 @@ func (r *postgresUserRepo) GetByEmail(ctx context.Context, email string) (*types
 
 func (r *postgresUserRepo) GetByID(ctx context.Context, id int) (*types.User, error) {
 	var u types.User
-	q := `SELECT id, username, email, password, created_at FROM users WHERE id = $1`
-	if err := r.db.QueryRowContext(ctx, q, id).Scan(&u.ID, &u.Username, &u.Email, &u.Password, &u.CreatedAt); err != nil {
+	q := `SELECT id, username, email, password FROM users WHERE id = $1`
+	if err := r.db.QueryRowContext(ctx, q, id).Scan(&u.ID, &u.Username, &u.Email, &u.Password); err != nil {
 		return nil, err
 	}
 	return &u, nil
