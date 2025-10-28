@@ -10,14 +10,16 @@ run-db:
 run-app:
 	docker-compose up -d app
 
-all: build-db build-app run-db run-app
+all: test build-db build-app run-db run-app
 
 clean:
 	docker-compose down -v
-	docker rmi -f postgres:alpine
 
 stop:
 	docker-compose stop
+
+test:
+	go test ./... -v -cover
 
 local-build:
 	@go build -o bin/kanban-board ./cmd/main.go
