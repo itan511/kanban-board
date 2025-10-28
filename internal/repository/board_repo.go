@@ -37,16 +37,38 @@ func (r *postgresBoardRepo) BoardNameExists(ctx context.Context, name string) (b
 }
 
 func (r *postgresBoardRepo) Create(ctx context.Context, b *types.Board) error {
-	q := `INSERT INTO boards (project_id, name) VALUES ($1, $2) RETURNING id`
-	if err := r.db.QueryRowContext(ctx, q, b.ProjectID, b.Name).Scan(&b.ID); err != nil {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
 		return err
 	}
 
-	_, err := r.db.ExecContext(ctx, `INSERT INTO columns (board_id, status) VALUES
+	defer func() {
+		if rec := recover(); rec != nil {
+			_ = tx.Rollback()
+			panic(rec)
+		}
+	}()
+
+	q := `INSERT INTO boards (project_id, name) VALUES ($1, $2) RETURNING id`
+	if err = tx.QueryRowContext(ctx, q, b.ProjectID, b.Name).Scan(&b.ID); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	if _, err = tx.ExecContext(ctx, `INSERT INTO columns (board_id, status) VALUES
 		($1, 'todo'),
 		($1, 'doing'),
-		($1, 'done')`, b.ID)
-	return err
+		($1, 'done')`, b.ID); err != nil {
+
+		_ = tx.Rollback()
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *postgresBoardRepo) GetByID(ctx context.Context, id int) (*types.Board, error) {

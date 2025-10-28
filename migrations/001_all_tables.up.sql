@@ -49,3 +49,11 @@ CREATE TABLE IF NOT EXISTS project_users (
     role VARCHAR(50) NOT NULL,
     PRIMARY KEY (project_id, user_id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_boards_project_id ON boards(project_id);
+
+CREATE INDEX IF NOT EXISTS idx_columns_board_id ON columns(board_id);
+
+CREATE INDEX IF NOT EXISTS idx_tasks_column_id ON tasks(column_id);

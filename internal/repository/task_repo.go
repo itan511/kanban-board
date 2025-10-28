@@ -40,17 +40,34 @@ func (r *postgresTaskRepo) TaskTitleExists(ctx context.Context, title string) (b
 }
 
 func (r *postgresTaskRepo) Create(ctx context.Context, t *types.Task) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if rec := recover(); rec != nil {
+			_ = tx.Rollback()
+			panic(rec)
+		}
+	}()
+
 	q := `INSERT INTO tasks (column_id, title, description) VALUES ($1, $2, $3) RETURNING id, created_at`
-	if err := r.db.QueryRowContext(ctx, q, t.ColumnID, t.Title, t.Description).Scan(&t.ID, &t.CreatedAt); err != nil {
+	if err = tx.QueryRowContext(ctx, q, t.ColumnID, t.Title, t.Description).Scan(&t.ID, &t.CreatedAt); err != nil {
+		_ = tx.Rollback()
 		return err
 	}
 	actionType := "create"
 	logMessage := "Task created successfully"
 
-	_, err := r.db.ExecContext(ctx, "INSERT INTO task_logs (task_id, action_type, log_message, created_at) VALUES ($1, $2, $3, $4)",
+	if _, err = tx.ExecContext(ctx, "INSERT INTO task_logs (task_id, action_type, log_message, created_at) VALUES ($1, $2, $3, $4)",
 		t.ID, actionType, logMessage, t.CreatedAt,
-	)
-	if err != nil {
+	); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
 		return err
 	}
 
@@ -87,7 +104,6 @@ func (r *postgresTaskRepo) GetByColumn(ctx context.Context, columnID int) ([]*ty
 	}
 	return res, nil
 }
-
 
 func (r *postgresTaskRepo) GetAll(ctx context.Context) ([]*types.Task, error) {
 	q := `SELECT id, column_id, title, description, created_at FROM tasks`
@@ -177,7 +193,7 @@ func (r *postgresTaskRepo) Delete(ctx context.Context, id int) error {
 
 	actionType := "delete"
 	logMessage := "Task deleted successfully"
-	_, err = r.db.ExecContext(ctx, 
+	_, err = r.db.ExecContext(ctx,
 		"INSERT INTO task_logs (task_id, action_type, log_message, created_at) VALUES ($1, $2, $3, $4)",
 		id, actionType, logMessage, time.Now(),
 	)

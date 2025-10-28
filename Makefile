@@ -10,7 +10,7 @@ run-db:
 run-app:
 	docker-compose up -d app
 
-all: build-db build-app run-db run-app
+all: test build-db build-app run-db run-app
 
 clean:
 	docker-compose down -v
@@ -19,7 +19,7 @@ stop:
 	docker-compose stop
 
 test:
-	go test ./... -v
+	go test ./... -v -cover
 
 local-build:
 	@go build -o bin/kanban-board ./cmd/main.go
